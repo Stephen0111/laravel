@@ -6,15 +6,21 @@ RUN apk add --no-cache \
     nginx \
     git \
     unzip \
+    zip \
+    curl \
+    build-base \
     libzip-dev \
     libpng-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    libonig-dev \
+    jpeg-dev \
+    webp-dev \
+    onig-dev \
     libxml2-dev \
-    curl-dev \
     icu-dev \
     gmp-dev \
+    freetype-dev \
+    libpq-dev \
+    sqlite-dev \
+    openldap-dev \
     && rm -rf /var/cache/apk/*
 
 # Install Composer
