@@ -19,10 +19,7 @@ RUN apk add --no-cache \
     libxml2-dev \
     icu-dev \
     gmp-dev \
-    # NEW: Dependencies for pdo_mysql and exif
-    mariadb-client-dev \
-    libexif-dev \
-    # Clean up apk cache
+    # Removed: mariadb-client-dev, libexif-dev for debugging exit code 3
     && rm -rf /var/cache/apk/*
 
 # Install Composer
@@ -31,14 +28,14 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install common PHP extensions required by Laravel and packages
 RUN docker-php-ext-install -j$(nproc) \
     pdo_sqlite \
-    pdo_mysql \
+    # pdo_mysql \ # Temporarily removed due to mariadb-client-dev removal
     opcache \
     zip \
     gd \
     mbstring \
     xml \
     intl \
-    exif \
+    # exif \ # Temporarily removed due to libexif-dev removal
     bcmath \
     sockets \
     && docker-php-ext-enable opcache
@@ -66,5 +63,5 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 # Expose Nginx port
 EXPOSE 80
 
-# Start Nginx and PHP-FPM
+# Start Nginx and PHP-FPM (this CMD is for the official php-fpm images)
 CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
