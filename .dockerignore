@@ -1,0 +1,13 @@
+# .dockerignore
+.git
+.gitignore
+.env
+.idea/
+.vscode/
+node_modules/
+public/hot
+public/storage # If using a persistent volume for storage, otherwise include
+storage/*.key
+/vendor # We install vendor dependencies inside the Dockerfile
+npm-debug.log
+yarn-error.log
