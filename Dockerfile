@@ -1,5 +1,5 @@
 # Use base image with PHP-FPM + Nginx
-FROM richarvey/nginx-php-fpm:8.2
+FROM richarvey/nginx-php-fpm:php8.2-alpine
 
 # Set working directory
 WORKDIR /var/www/html
