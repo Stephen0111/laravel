@@ -1,5 +1,5 @@
 # Dockerfile using official PHP-FPM and installing Nginx
-FROM php:8.2-fpm-alpine # This line must contain ONLY the FROM instruction and the image name/tag
+FROM php:8.2-fpm-alpine
 
 # Install system dependencies, including Nginx and common PHP extensions
 RUN apk add --no-cache \
