@@ -1,8 +1,8 @@
 # Dockerfile using official PHP-FPM and installing Nginx
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies, including Nginx, Git, Unzip, and essential build tools
-# Also, include libraries for various PHP extensions.
+# Install essential system dependencies and common PHP extension libs
+# This list is designed to be very common and less prone to "not found" errors.
 RUN apk add --no-cache \
     nginx \
     git \
@@ -12,7 +12,6 @@ RUN apk add --no-cache \
     build-base \
     autoconf \
     libtool \
-    # Dependencies for common PHP extensions
     libzip-dev \
     libpng-dev \
     jpeg-dev \
@@ -20,21 +19,17 @@ RUN apk add --no-cache \
     onig-dev \
     libxml2-dev \
     icu-dev \
-    gmp-dev \
-    freetype-dev \
-    libpq-dev \
-    sqlite-dev \
-    openldap-dev \
-    # Clean up apk cache to reduce image size
+    # Clean up apk cache
     && rm -rf /var/cache/apk/*
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install common PHP extensions required by Laravel and packages
+# Note: pdo_sqlite, opcache, mbstring, xml, curl, intl, exif are often built-in or rely on libs above.
+# zip, gd, bcmath, sockets, gmp are the most likely ones to need specific `docker-php-ext-install` and their `apk add` dependencies.
 RUN docker-php-ext-install -j$(nproc) \
     pdo_sqlite \
-    pdo_mysql \
     opcache \
     zip \
     gd \
@@ -45,7 +40,7 @@ RUN docker-php-ext-install -j$(nproc) \
     exif \
     bcmath \
     sockets \
-    gmp \
+    # gmp # Try commenting this out for now if previous apk add failed due to gmp-dev
     && docker-php-ext-enable opcache
 
 # Configure Nginx (assuming you have .docker/nginx/default.conf)
@@ -71,5 +66,5 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 # Expose Nginx port
 EXPOSE 80
 
-# Start Nginx and PHP-FPM (this CMD is for the official php-fpm images)
+# Start Nginx and PHP-FPM
 CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
