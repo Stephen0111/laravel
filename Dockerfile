@@ -1,7 +1,7 @@
 # Dockerfile using official PHP-FPM and installing Nginx
 FROM php:8.2-fpm-alpine
 
-# Update package index and install all necessary system dependencies including build tools and PHP extension development libraries
+
 RUN apk update && apk add --no-cache \
     nginx \
     git \
@@ -19,9 +19,10 @@ RUN apk update && apk add --no-cache \
     icu-dev \
     gmp-dev \
     sqlite-dev \
-    mariadb-client-dev \
-    libexif-dev \
-    && rm -rf /var/cache/apk/* # Clean up apk cache
+    mariadb-connector-c-dev \
+    libexif \
+    && rm -rf /var/cache/apk/*
+
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
