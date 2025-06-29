@@ -1,50 +1,84 @@
 # Dockerfile using official PHP-FPM and installing Nginx
 FROM php:8.2-fpm-alpine
 
-# Install essential system dependencies and common PHP extension libs
-# This list is designed to be very common and less prone to "not found" errors.
+# Install essential system dependencies in stages to identify issues
+# First, update package index
+RUN apk update
+
+# Install basic packages first
 RUN apk add --no-cache \
     nginx \
     git \
     unzip \
     zip \
-    curl \
+    curl
+
+# Install build dependencies
+RUN apk add --no-cache \
     build-base \
     autoconf \
-    libtool \
+    pkgconfig
+
+# Install development libraries for PHP extensions
+RUN apk add --no-cache \
     libzip-dev \
     libpng-dev \
-    jpeg-dev \
-    webp-dev \
-    onig-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    oniguruma-dev \
     libxml2-dev \
     icu-dev \
-    # Clean up apk cache
-    && rm -rf /var/cache/apk/*
+    sqlite-dev
+
+# Clean up apk cache
+RUN rm -rf /var/cache/apk/*
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Install common PHP extensions required by Laravel and packages
-# Note: pdo_sqlite, opcache, mbstring, xml, curl, intl, exif are often built-in or rely on libs above.
-# zip, gd, bcmath, sockets, gmp are the most likely ones to need specific `docker-php-ext-install` and their `apk add` dependencies.
+# Configure GD extension with JPEG and WebP support
+RUN docker-php-ext-configure gd \
+    --with-jpeg \
+    --with-webp
+
+# Install common PHP extensions required by Laravel
 RUN docker-php-ext-install -j$(nproc) \
     pdo_sqlite \
+    pdo_mysql \
     opcache \
     zip \
     gd \
     mbstring \
     xml \
-    curl \
     intl \
     exif \
     bcmath \
-    sockets \
-    # gmp # Try commenting this out for now if previous apk add failed due to gmp-dev
-    && docker-php-ext-enable opcache
+    sockets
 
-# Configure Nginx (assuming you have .docker/nginx/default.conf)
-COPY .docker/nginx/default.conf /etc/nginx/http.d/default.conf
+# Enable opcache
+RUN docker-php-ext-enable opcache
+
+# Create nginx directories
+RUN mkdir -p /run/nginx
+
+# Configure Nginx with a basic configuration if custom config doesn't exist
+RUN echo 'server { \
+    listen 80; \
+    root /var/www/html/public; \
+    index index.php index.html; \
+    location / { \
+    try_files $uri $uri/ /index.php?$query_string; \
+    } \
+    location ~ \.php$ { \
+    fastcgi_pass 127.0.0.1:9000; \
+    fastcgi_index index.php; \
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+    include fastcgi_params; \
+    } \
+    }' > /etc/nginx/http.d/default.conf
+
+# Copy custom nginx config if it exists (uncomment the line below if you have a custom config)
+# COPY .docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
 # Set the working directory
 WORKDIR /var/www/html
