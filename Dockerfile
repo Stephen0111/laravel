@@ -2,7 +2,7 @@
 # Use a base image that includes PHP-FPM and Nginx
 # richarvey/nginx-php-fpm is a popular choice for Laravel/PHP on Docker
 # Choose a PHP version that matches your Laravel app's requirements (e.g., 8.2 or 8.3)
-FROM richarvey/nginx-php-fpm:latest
+FROM richarvey/nginx-php-fpm:8.2
 # Line 5 (where the error was) should now be just the FROM instruction.
 # The comment that was previously on line 5 has been moved to its own line (or removed).
 
