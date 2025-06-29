@@ -1,7 +1,8 @@
 # Dockerfile using official PHP-FPM and installing Nginx
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies, including Nginx and common PHP extensions
+# Install system dependencies, including Nginx, Git, Unzip, and essential build tools
+# Also, include libraries for various PHP extensions.
 RUN apk add --no-cache \
     nginx \
     git \
@@ -9,6 +10,9 @@ RUN apk add --no-cache \
     zip \
     curl \
     build-base \
+    autoconf \
+    libtool \
+    # Dependencies for common PHP extensions
     libzip-dev \
     libpng-dev \
     jpeg-dev \
@@ -21,6 +25,7 @@ RUN apk add --no-cache \
     libpq-dev \
     sqlite-dev \
     openldap-dev \
+    # Clean up apk cache to reduce image size
     && rm -rf /var/cache/apk/*
 
 # Install Composer
