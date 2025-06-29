@@ -1,47 +1,34 @@
 # Dockerfile using official PHP-FPM and installing Nginx
 FROM php:8.2-fpm-alpine
 
-# Install essential system dependencies in stages to identify issues
-# First, update package index
-RUN apk update
-
-# Install basic packages first
+# Install essential system dependencies and common PHP extension libs
 RUN apk add --no-cache \
     nginx \
     git \
     unzip \
     zip \
-    curl
-
-# Install build dependencies
-RUN apk add --no-cache \
+    curl \
     build-base \
     autoconf \
-    pkgconfig
-
-# Install development libraries for PHP extensions
-RUN apk add --no-cache \
+    libtool \
     libzip-dev \
     libpng-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    oniguruma-dev \
+    jpeg-dev \
+    webp-dev \
+    onig-dev \
     libxml2-dev \
     icu-dev \
-    sqlite-dev
-
-# Clean up apk cache
-RUN rm -rf /var/cache/apk/*
+    gmp-dev \
+    # NEW: Dependencies for pdo_mysql and exif
+    mariadb-client-dev \
+    libexif-dev \
+    # Clean up apk cache
+    && rm -rf /var/cache/apk/*
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Configure GD extension with JPEG and WebP support
-RUN docker-php-ext-configure gd \
-    --with-jpeg \
-    --with-webp
-
-# Install common PHP extensions required by Laravel
+# Install common PHP extensions required by Laravel and packages
 RUN docker-php-ext-install -j$(nproc) \
     pdo_sqlite \
     pdo_mysql \
@@ -53,32 +40,11 @@ RUN docker-php-ext-install -j$(nproc) \
     intl \
     exif \
     bcmath \
-    sockets
+    sockets \
+    && docker-php-ext-enable opcache
 
-# Enable opcache
-RUN docker-php-ext-enable opcache
-
-# Create nginx directories
-RUN mkdir -p /run/nginx
-
-# Configure Nginx with a basic configuration if custom config doesn't exist
-RUN echo 'server { \
-    listen 80; \
-    root /var/www/html/public; \
-    index index.php index.html; \
-    location / { \
-    try_files $uri $uri/ /index.php?$query_string; \
-    } \
-    location ~ \.php$ { \
-    fastcgi_pass 127.0.0.1:9000; \
-    fastcgi_index index.php; \
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
-    include fastcgi_params; \
-    } \
-    }' > /etc/nginx/http.d/default.conf
-
-# Copy custom nginx config if it exists (uncomment the line below if you have a custom config)
-# COPY .docker/nginx/default.conf /etc/nginx/http.d/default.conf
+# Configure Nginx (assuming you have .docker/nginx/default.conf)
+COPY .docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
 # Set the working directory
 WORKDIR /var/www/html
