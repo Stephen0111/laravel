@@ -1,34 +1,27 @@
 # Dockerfile using official PHP-FPM and installing Nginx
 FROM php:8.2-fpm-alpine
 
-# Update package index
-RUN apk update
-
-# Install essential system dependencies with correct Alpine package names
-RUN apk add --no-cache \
+# Update package index and install all necessary system dependencies including build tools and PHP extension development libraries
+RUN apk update && apk add --no-cache \
     nginx \
     git \
     unzip \
     zip \
     curl \
-    build-base \
     autoconf \
-    pkgconfig
-
-# Install development libraries for PHP extensions (correct package names)
-RUN apk add --no-cache \
+    build-base \
     libzip-dev \
     libpng-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    oniguruma-dev \
+    jpeg-dev \
+    webp-dev \
+    onig-dev \
     libxml2-dev \
     icu-dev \
     gmp-dev \
-    sqlite-dev
-
-# Clean up apk cache
-RUN rm -rf /var/cache/apk/*
+    sqlite-dev \
+    mariadb-client-dev \
+    libexif-dev \
+    && rm -rf /var/cache/apk/* # Clean up apk cache
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -39,7 +32,7 @@ RUN docker-php-ext-configure gd \
     --with-webp
 
 # Install common PHP extensions required by Laravel
-RUN docker-php-ext-install -j$(nproc) \
+RUN docker-php-ext-install \
     pdo_sqlite \
     pdo_mysql \
     opcache \
@@ -51,10 +44,8 @@ RUN docker-php-ext-install -j$(nproc) \
     exif \
     bcmath \
     sockets \
-    gmp
-
-# Enable opcache
-RUN docker-php-ext-enable opcache
+    gmp \
+    && docker-php-ext-enable opcache # Enable opcache here, only once
 
 # Create nginx directories
 RUN mkdir -p /run/nginx
