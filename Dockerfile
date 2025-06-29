@@ -1,32 +1,25 @@
-# Dockerfile
-# Use a base image that includes PHP-FPM and Nginx
-# richarvey/nginx-php-fpm is a popular choice for Laravel/PHP on Docker
-# Choose a PHP version that matches your Laravel app's requirements (e.g., 8.2 or 8.3)
+# Use base image with PHP-FPM + Nginx
 FROM richarvey/nginx-php-fpm:8.2
-# Line 5 (where the error was) should now be just the FROM instruction.
-# The comment that was previously on line 5 has been moved to its own line (or removed).
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /var/www/html
 
-# Copy your composer.json and composer.lock first to leverage Docker's caching
+# Copy composer files first to optimize Docker layer caching
 COPY composer.json composer.lock ./
 
-# Install Composer dependencies
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy the rest of your application code
+# Copy application files into the container
 COPY . .
 
-# Set permissions for storage and bootstrap/cache
+# Set proper permissions for Laravel
 RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && chmod -R 775 database
 
-# Ensure the database directory and file are writable
-RUN chmod -R 775 database
-
-# Expose the port that Nginx will be listening on (default for this image is 80)
+# Expose default port
 EXPOSE 80
 
-# Command to run when the container starts
+# Start Nginx and PHP-FPM
 CMD ["/start.sh"]
