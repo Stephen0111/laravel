@@ -1,4 +1,4 @@
-# 🌟 Laravel BlogHub – Fullstack Laravel & Bootstrap Web App
+# 🌟 Laravel Blog app – Fullstack Laravel & Bootstrap Web App
 
 Welcome to **Bazinga**, a fullstack web application built with the **Laravel framework** for the backend and a frontend experience powered by **Blade views**, **Bootstrap**, and **JavaScript**.
 
