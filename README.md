@@ -56,7 +56,7 @@ Welcome to **Bazinga**, a fullstack web application built with the **Laravel fra
 ```bash
 # Clone the repository
 git clone https://github.com/stephen0111/laravel
-cd laravel-project
+cd laravel
 
 # Install dependencies
 composer install
